@@ -27,6 +27,7 @@ description: 在 Windows PowerShell 7 中写可靠的命令和 .ps1 脚本，避
 16. 含中文或超过 3 行的命令写成 UTF-8 临时 `.ps1` 再 `-File` 执行；管道不要留在行尾。
 17. 预估输出超过 10 KB 时先限量（`Select-Object -First`、`rg -m`）或重定向到文件。
 18. 同一 URL 失败一次后改 `curl.exe -sSL --max-time 20`，两次就停；GitHub API 的 401/429 不要重试，换 token 或改用搜索。
+19. 长驻任务（dev server、批处理、安装）用后台或显式超时，不要前台干等；被中断后不要原样重试。
 
 ## 验证习惯
 
