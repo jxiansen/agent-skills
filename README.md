@@ -2,6 +2,8 @@
 
 个人 agent 技能集合，通过 [magpie](https://usemagpie.ai) 的 Library 分发：每个子目录是一个技能（含 `SKILL.md`），magpie 记录来源仓库和 commit，可以检查更新并一键拉取。
 
+仓库：<https://github.com/jxiansen/agent-skills>
+
 ## 技能
 
 | 技能 | 用途 |
@@ -48,7 +50,7 @@ pwsh -NoProfile -File .\skills\environment\scripts\env-info.ps1 -Section all -Fo
 2. magpie → Library → Skills → 安装，粘贴：
 
    ```
-   https://github.com/<owner>/<repo>/tree/main/skills/environment
+   https://github.com/jxiansen/agent-skills/tree/main/skills/environment
    ```
 
 3. 勾选要分发的 agent（如 `codex`、`opencode`、`fx`，WSL 里的 agent 会拿到副本）。
@@ -78,3 +80,7 @@ magpie library skill update environment
 - `SKILL.md` 的第一步会读 `~/.agents/ENVIRONMENT.md`，那是本机快照，不随仓库分发；不存在时跳过。
 - WSL 里的 agent 拿到的是副本，跟随 `magpie library sync` 更新。
 - 技能目录名保持 `environment` 前缀；改名后自动定位仍然生效，但换成完全无关的名字就找不到了。
+
+## License
+
+MIT，见 [LICENSE](LICENSE)。
