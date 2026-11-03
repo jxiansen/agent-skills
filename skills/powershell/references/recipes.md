@@ -102,3 +102,45 @@ $crlf = ($text -split "`r`n").Count - 1
 ```
 
 PS 7 写 UTF-8；PS 5.1 需要 `| Out-File -Encoding utf8 $log` 才能避免 UTF-16。
+
+## 网络与重试
+
+```powershell
+curl.exe -sSL --max-time 20 -o $out $url
+```
+
+- 第一次失败就换 `curl.exe`，不要反复用 `Invoke-WebRequest`。
+- 同一 URL 第二次失败就停，报告而不是继续猜路径。
+- GitHub API 的 401 是没带 token，429 是限额；换 `gh`、token 或 `websearch`，不要重试。
+
+## Python 依赖
+
+```powershell
+uv run --with pillow python script.py
+
+# 或先探测
+python -c "import PIL" 2>$null
+if ($LASTEXITCODE -ne 0) { 'PIL missing' }
+```
+
+## 输出限量
+
+```powershell
+Get-ChildItem -Recurse | Select-Object -First 20
+rg -m 5 "pattern" .
+& some.exe *> "$env:TEMP\out.log"
+(Get-Item "$env:TEMP\out.log").Length
+```
+
+## 临时脚本（含中文或多行）
+
+```powershell
+$p = Join-Path $env:TEMP 'task.ps1'
+@'
+# 中文注释可以放心写
+Get-ChildItem 'C:\Users' | Select-Object -First 5
+'@ | Set-Content -LiteralPath $p -Encoding utf8
+pwsh -NoProfile -File $p
+```
+
+管道不要留在行尾：`} |` 跨行在部分传输方式下会变成空管道，报 `An empty pipe element is not allowed`。

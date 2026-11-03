@@ -23,6 +23,10 @@ description: 在 Windows PowerShell 7 中写可靠的命令和 .ps1 脚本，避
 12. 变量名大小写不敏感：参数 `$Name` 会和 `foreach ($name ...)` 冲突。
 13. 没有 `chmod`；权限问题看执行策略（`Get-ExecutionPolicy`）和 ACL。
 14. 命令输出是对象不是文本：先 `Select-Object` 取字段，再决定怎么展示。
+15. 需要第三方 Python 包时用 `uv run --with <pkg>` 声明依赖，不要假设全局已装。
+16. 含中文或超过 3 行的命令写成 UTF-8 临时 `.ps1` 再 `-File` 执行；管道不要留在行尾。
+17. 预估输出超过 10 KB 时先限量（`Select-Object -First`、`rg -m`）或重定向到文件。
+18. 同一 URL 失败一次后改 `curl.exe -sSL --max-time 20`，两次就停；GitHub API 的 401/429 不要重试，换 token 或改用搜索。
 
 ## 验证习惯
 
@@ -40,3 +44,5 @@ description: 在 Windows PowerShell 7 中写可靠的命令和 .ps1 脚本，避
 | `$a | ConvertTo-Json` | 默认深度 2，深层字段会被截断 |
 | `try { 外部命令 } catch` | 原生命令失败不抛异常，只看 `$LASTEXITCODE` |
 | `ls` / `rm` / `cat` | 都是别名，参数语义与 bash 不同 |
+| 内联多行 PowerShell | 中文或管道换行会损坏语法，写成临时 `.ps1` |
+| 直接 `from PIL import Image` | 全局环境不一定有，用 `uv run --with pillow` |

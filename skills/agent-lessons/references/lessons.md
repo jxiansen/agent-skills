@@ -4,13 +4,27 @@
 
 上次蒸馏：2026-11-03
 
-| 日期 | 问题 | 根因 | 去向 |
+| 日期 | 问题 | 根因 | 落点 |
 | --- | --- | --- | --- |
-| 2026-11-03 | `.ps1` 在 PS 5.1 下解析失败 | 无 BOM 的 UTF-8 被按 ANSI 读取，中文注释破坏语法 | `powershell` skill：脚本保持纯 ASCII |
-| 2026-11-03 | `-Section services` 被当成过滤器 | `$Name` 参数与 `foreach ($name ...)` 同名，PowerShell 大小写不敏感 | `powershell` skill：参数与循环变量不要同名 |
-| 2026-11-03 | 非 ASCII 输出乱码 | 控制台编码为 gb2312 | AGENTS.md「Shell 输出」：先设 UTF-8 |
-| 2026-11-03 | WSL agent 未拿到新技能，但 `agents` 字段已记录 | 安装时 WSL 关机，写入被静默跳过 | 本文：安装后跑 `magpie library sync` 并核对 `applied` |
+| 2026-11-03 | Codex 264 次 `shell: bash`，230 次失败 | 模型自选 shell，先验偏 bash | AGENTS.md「环境」：必须 `shell: "pwsh"` |
+| 2026-11-03 | 28 次提问被用户关闭 | 对可逆操作也请求确认 | AGENTS.md「交互」：可逆操作直接做 |
+| 2026-11-03 | 同一失败命令重复 6 次 / 4 次 | 没区分环境错误和命令错误 | AGENTS.md「路径与网络」：命令失败 2 次换方法 |
+| 2026-11-03 | 67 次输出被截断 | 无限制打印大目录和文件 | AGENTS.md「Shell 输出」+ `powershell` skill |
+| 2026-11-03 | 56 次 `Transport error`、10 次 socket 关闭 | 代理抖动、重试策略不统一 | `powershell` skill：网络与重试 |
+| 2026-11-03 | `No module named 'PIL'` 4 次 | 假设全局已装依赖 | `powershell` skill：`uv run --with` |
+| 2026-11-03 | 28 次 `ParserError`，命令里出现替换字符 | 中文/多行内联传输损坏 | `powershell` skill：写临时 `.ps1` |
+| 2026-11-03 | 62 次 oldString 找不到 | 凭记忆编辑、上下文不足 | AGENTS.md「编辑」已有；skill 中补配方 |
+| 2026-11-03 | 明文 SSH 密码出现在命令里 | 图省事直接写密码 | AGENTS.md「安全」：禁止明文凭据 |
 
-## 待观察
+## 回归项
 
-- 暂无。新的候选项先进 inbox，攒够再蒸馏。
+- WSL 与 Windows 路径混用（历史 500+ 次，2026-07 迁移后归零）：不占全局规则，出现时再升级。
+
+## 观察中（暂不立规则）
+
+- 改动范围过大导致撤销（5 次）：先看是否复发。
+- Plan 模式越界（2 次）、工具参数 schema 错误（4 次）、匿名 API 401/429（3 次）：低频，未达门槛。
+
+## 已丢弃
+
+- 单次拼写/网络错误、一次性环境问题。
