@@ -9,15 +9,25 @@
 | 技能 | 用途 |
 | --- | --- |
 | `environment` | 查询当前 Windows 工作站的运行环境：操作系统、PowerShell、硬件、磁盘、工具链、WSL、Windows 服务、代理和配置路径 |
+| `powershell` | 在 Windows PowerShell 7 中写可靠命令：引号、编码、行尾、JSON 深度、路径、原生命令退出码 |
+| `agent-lessons` | 经验沉淀：记录踩坑、分类落点、定期蒸馏、淘汰过期规则 |
 
 ## 结构
 
 ```
 skills/
-└─ environment/
+├─ environment/
+│  ├─ SKILL.md
+│  └─ scripts/
+│     └─ env-info.ps1
+├─ powershell/
+│  ├─ SKILL.md
+│  └─ references/
+│     └─ recipes.md
+└─ agent-lessons/
    ├─ SKILL.md
-   └─ scripts/
-      └─ env-info.ps1
+   └─ references/
+      └─ lessons.md
 ```
 
 ## 本地测试
@@ -47,15 +57,17 @@ pwsh -NoProfile -File .\skills\environment\scripts\env-info.ps1 -Section all -Fo
 ## 安装到 magpie
 
 1. push 到 GitHub。
-2. magpie → Library → Skills → 安装，粘贴：
+2. magpie → Library → Skills → 安装，粘贴仓库地址：
 
    ```
-   https://github.com/jxiansen/agent-skills/tree/main/skills/environment
+   https://github.com/jxiansen/agent-skills
    ```
 
-3. 勾选要分发的 agent（如 `codex`、`opencode`、`fx`，WSL 里的 agent 会拿到副本）。
+   探针会列出三个技能（`environment`、`powershell`、`agent-lessons`），勾选需要的；也可以直接粘某个技能的 `tree` 地址，只装一个。
 
-**安装前先移除同名的本地技能**，否则 magpie 会并排装成 `environment-<owner>`：
+3. 勾选要分发的 agent（如 `codex`、`opencode`、`fx`）。
+
+**`environment` 安装前先移除同名的本地技能**，否则 magpie 会并排装成 `environment-<owner>`：
 
 ```powershell
 magpie library skill rm environment
@@ -70,15 +82,16 @@ magpie library skill rm environment
 改这里 → push → 拉取新版本：
 
 ```powershell
+magpie library skill update            # 所有来自 GitHub 的技能
 magpie library skill update environment
 ```
 
-不要直接编辑 `~/.config/magpie/library/skills/environment/`：本地内容与记录的 hash 不一致后，更新会被拒绝（需要 `--replace-edits` 强推），被替换的版本进备份。把库里的副本当只读。
+不要直接编辑 `~/.config/magpie/library/skills/<name>/`：本地内容与记录的 hash 不一致后，更新会被拒绝（需要 `--replace-edits` 强推），被替换的版本进备份。把库里的副本当只读。
 
 ## 备注
 
 - `SKILL.md` 的第一步会读 `~/.agents/ENVIRONMENT.md`，那是本机快照，不随仓库分发；不存在时跳过。
-- WSL 里的 agent 拿到的是副本，跟随 `magpie library sync` 更新。
+- 这些技能面向 Windows；WSL 里的 agent 没有 `pwsh`，拿到副本也执行不了。不需要时把它们从 agent 列表里撤掉即可。
 - 技能目录名保持 `environment` 前缀；改名后自动定位仍然生效，但换成完全无关的名字就找不到了。
 
 ## License
