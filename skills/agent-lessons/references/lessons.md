@@ -2,6 +2,8 @@
 
 只放已经落地的条目；原始记录在 `$env:USERPROFILE\.agents\lessons-inbox.md`。
 
+上次蒸馏：2026-11-03
+
 | 日期 | 问题 | 根因 | 去向 |
 | --- | --- | --- | --- |
 | 2026-11-03 | `.ps1` 在 PS 5.1 下解析失败 | 无 BOM 的 UTF-8 被按 ANSI 读取，中文注释破坏语法 | `powershell` skill：脚本保持纯 ASCII |

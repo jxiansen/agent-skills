@@ -49,7 +49,7 @@ description: 把对话里踩过的坑沉淀成可复用约束，并定期蒸馏�
 2. 逐条分类落到对应层；能写成脚本的优先写脚本。
 3. 更新 `references/lessons.md`，只保留已蒸馏的条目和去向。
 4. 清空 inbox，保留模板。
-5. 仓库 commit + push；技能有改动时 `magpie library skill update agent-lessons`；instructions 有改动时 `magpie library sync`。
+5. 在 `agent-skills` 仓库（本机 `$env:USERPROFILE\dev\workspace\agent-skills`）commit + push；技能有改动时 `magpie library skill update agent-lessons`；instructions 有改动时 `magpie library sync`。
 6. 验证：`magpie library skill update` 无报错，agent 侧文件已更新。
 
 ## 反模式
