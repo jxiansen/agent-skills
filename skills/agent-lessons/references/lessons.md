@@ -13,7 +13,7 @@
 | 2026-11-03 | 56 次 `Transport error`、10 次 socket 关闭 | 代理抖动、重试策略不统一 | `powershell` skill：网络与重试 |
 | 2026-11-03 | `No module named 'PIL'` 4 次 | 假设全局已装依赖 | `powershell` skill：`uv run --with` |
 | 2026-11-03 | 28 次 `ParserError`，命令里出现替换字符 | 中文/多行内联传输损坏 | `powershell` skill：写临时 `.ps1` |
-| 2026-11-03 | 62 次 oldString 找不到 | 凭记忆编辑、上下文不足 | AGENTS.md「编辑」已有；skill 中补配方 |
+| 2026-11-03 | 62 次 oldString 找不到 | 凭记忆编辑、上下文不足 | AGENTS.md「编辑」已有规则，未新增 |
 | 2026-11-03 | 明文 SSH 密码出现在命令里 | 图省事直接写密码 | AGENTS.md「安全」：禁止明文凭据 |
 
 ## 回归项
