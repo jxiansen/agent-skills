@@ -2,7 +2,8 @@
 param(
     [string]$Section = 'all',
     [ValidateSet('Json', 'Text')]
-    [string]$Format = 'Json'
+    [string]$Format = 'Json',
+    [string]$Name
 )
 
 $ErrorActionPreference = 'Stop'
@@ -92,10 +93,13 @@ function Get-ProgramVersionAtPath {
 
 function Get-OSInfo {
     $os = Get-CimInstance Win32_OperatingSystem
+    $release = Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion' -ErrorAction SilentlyContinue
     [ordered]@{
         caption = $os.Caption
         version = $os.Version
         build = $os.BuildNumber
+        ubr = $release.UBR
+        display_version = $release.DisplayVersion
         architecture = $os.OSArchitecture
         timezone = (Get-TimeZone).Id
     }
@@ -172,11 +176,41 @@ function Get-WSLInfo {
             Where-Object { $_.Trim() }
     )
 
-    [ordered]@{
+    $stateNames = 'Running|Stopped|Installing|Uninstalling|Converting|Starting|Unknown'
+    $distros = @(
+        foreach ($line in $lines) {
+            if ($line -match "^\s*(?<default>\*)?\s*(?<name>.+?)\s+(?<state>$stateNames)\s+(?<version>\d+)\s*$") {
+                [ordered]@{
+                    name = $Matches['name'].Trim()
+                    state = $Matches['state']
+                    version = [int]$Matches['version']
+                    default = [bool]$Matches['default']
+                }
+            }
+        }
+    )
+
+    $defaultName = $null
+    foreach ($distro in $distros) {
+        if ($distro.default) {
+            $defaultName = $distro.name
+            break
+        }
+    }
+
+    $result = [ordered]@{
         available = $true
         exit_code = $exitCode
-        output = $lines
+        default = $defaultName
+        distros = $distros
     }
+
+    # Keep the raw lines when the output is localized or changes shape, rather than returning nothing.
+    if ($distros.Count -eq 0) {
+        $result.raw = $lines
+    }
+
+    $result
 }
 
 function Get-NetworkInfo {
@@ -210,13 +244,69 @@ function Get-ConfigInfo {
     }
 }
 
+function Get-ServicesInfo {
+    param([string]$Filter)
+
+    $services = @(Get-CimInstance Win32_Service)
+
+    if ($Filter) {
+        $matched = @(
+            $services |
+                Where-Object { $_.Name -like "*$Filter*" -or $_.DisplayName -like "*$Filter*" } |
+                Sort-Object Name
+        )
+
+        return [ordered]@{
+            filter = $Filter
+            count = $matched.Count
+            services = @(
+                $matched |
+                    Select-Object -First 50 |
+                    ForEach-Object {
+                        [ordered]@{
+                            name = $_.Name
+                            display_name = $_.DisplayName
+                            state = $_.State
+                            start_mode = $_.StartMode
+                            process_id = $_.ProcessId
+                        }
+                    }
+            )
+        }
+    }
+
+    $running = @($services | Where-Object { $_.State -eq 'Running' })
+    $stopped = @($services | Where-Object { $_.State -eq 'Stopped' })
+    $autoStopped = @(
+        $services |
+            Where-Object { $_.StartMode -eq 'Auto' -and $_.State -ne 'Running' } |
+            Sort-Object Name
+    )
+
+    [ordered]@{
+        total = $services.Count
+        running = $running.Count
+        stopped = $stopped.Count
+        auto_not_running = @(
+            $autoStopped |
+                ForEach-Object {
+                    [ordered]@{
+                        name = $_.Name
+                        display_name = $_.DisplayName
+                        state = $_.State
+                    }
+                }
+        )
+    }
+}
+
 $requested = @(
     $Section -split '[, ]+' |
         ForEach-Object { $_.Trim().ToLowerInvariant() } |
         Where-Object { $_ }
 )
 
-$known = @('os', 'hardware', 'shell', 'toolchain', 'disk', 'wsl', 'network', 'config')
+$known = @('os', 'hardware', 'shell', 'toolchain', 'disk', 'wsl', 'network', 'config', 'services')
 if ($requested -contains 'all') {
     $requested = $known
 }
@@ -226,9 +316,13 @@ if ($unknown.Count -gt 0) {
     throw "Unknown section(s): $($unknown -join ', '). Valid sections: $($known -join ', '), all"
 }
 
+if ($Name -and ($requested -notcontains 'services')) {
+    throw 'The -Name parameter only applies to the services section.'
+}
+
 $result = [ordered]@{}
-foreach ($name in $requested) {
-    $result[$name] = switch ($name) {
+foreach ($sectionName in $requested) {
+    $result[$sectionName] = switch ($sectionName) {
         'os' { Get-OSInfo }
         'hardware' { Get-HardwareInfo }
         'shell' { Get-ShellInfo }
@@ -237,6 +331,7 @@ foreach ($name in $requested) {
         'wsl' { Get-WSLInfo }
         'network' { Get-NetworkInfo }
         'config' { Get-ConfigInfo }
+        'services' { Get-ServicesInfo -Filter $Name }
     }
 }
 
@@ -244,8 +339,9 @@ if ($Format -eq 'Json') {
     $result | ConvertTo-Json -Depth 8
 }
 else {
-    foreach ($name in $requested) {
-        "## $name"
-        $result[$name] | Format-List
+    foreach ($sectionName in $requested) {
+        "## $sectionName"
+        $result[$sectionName] | ConvertTo-Json -Depth 8
+        ''
     }
 }
